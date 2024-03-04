@@ -24,7 +24,7 @@ include "../connection.php";
       </form>
       <div class="signup">
         <span class="signup">Don't have an account?
-         <label for="check">Signup</label>
+         <label for="check"><a href="../register/">Register</a></label>
         </span>
       </div>
     </div>
