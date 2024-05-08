@@ -1,3 +1,21 @@
+<?php
+
+$userEnvironments = null;
+
+if(isset($_SESSION["id"])) {
+    $read = $conn->prepare('SELECT environ_id, environ_name FROM environments WHERE user_id=?');
+    $read->bind_param('i', $_SESSION['id']);
+    $read->execute();
+    $result = $read->get_result();
+    if ($result->num_rows != 0) {
+        while ($row = $result->fetch_assoc()) {
+            $userEnvironments[] = $row;
+        }
+    }
+}
+
+?>
+
 <!-- Sidebar -->
 <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
@@ -30,13 +48,16 @@
     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
         aria-expanded="true" aria-controls="collapseTwo">
         <i class="fas fa-fw fa-cog"></i>
-        <span>Components</span>
+        <span>Environments</span>
     </a>
     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
         <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Custom Components:</h6>
-            <a class="collapse-item" href="buttons.html">Buttons</a>
-            <a class="collapse-item" href="cards.html">Cards</a>
+            <h6 class="collapse-header">Active Environments:</h6>
+            <?php 
+                foreach ($userEnvironments as $env) {
+                    echo '<a class="collapse-item" href="../dashboard/?environment='.$env["environ_id"].'">'.$env["environ_name"].'</a>';
+                }
+            ?>
         </div>
     </div>
 </li>

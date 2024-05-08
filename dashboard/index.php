@@ -9,6 +9,47 @@ if(!isset($_SESSION["logged_in"])) {
     die("Must be logged in to view this page.");
 }
 
+$userEnv = null;
+$currentEnv = null;
+$environmentId = 0;
+
+if(isset($_SESSION["id"])) {
+    $read = $conn->prepare('SELECT * FROM environments WHERE user_id=? ');
+    $read->bind_param('i', $_SESSION['id']);
+    $read->execute();
+    $result = $read->get_result();
+    if ($result->num_rows != 0) {
+        while ($row = $result->fetch_assoc()) {
+            $userEnv[] = $row;
+        }
+    }
+}
+
+if(sizeof($userEnv) > 1) {
+    $environmentId = $userEnv[0]["environ_id"];
+    $currentEnv = $userEnv[0];
+}
+
+if(isset($_GET['environment'])) {
+    foreach($userEnv as $env) {
+        if ($env["environ_id"] == $_GET["environment"]) {
+            $environmentId = $env["environ_id"];
+            $currentEnv = $env;
+        }
+    }
+}
+
+$dashboardData = null;
+
+$read = $conn->prepare('SELECT * FROM gardeneye_data WHERE environ_id=? ');
+$read->bind_param('i', $environmentId);
+$read->execute();
+$result = $read->get_result();
+if ($result->num_rows != 0) {
+    while ($row = $result->fetch_assoc()) {
+        $dashboardData[] = $row;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -22,7 +63,7 @@ if(!isset($_SESSION["logged_in"])) {
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin 2 - Dashboard</title>
+    <title>GardenEye - Dashboard</title>
 
     <!-- Custom fonts for this template-->
     <link href="../assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -55,9 +96,9 @@ if(!isset($_SESSION["logged_in"])) {
 
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
-                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
-                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                        <h1 class="h3 mb-0 text-gray-800">Dashboard: <?php echo $currentEnv["environ_name"]; ?></h1>
+                        <a href="../create/" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                class="fa-sm text-white-50"></i> Create New Environment</a>
                     </div>
 
                     <!-- Content Row -->
@@ -157,7 +198,7 @@ if(!isset($_SESSION["logged_in"])) {
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Earnings Overview</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Environment Overview</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -188,7 +229,7 @@ if(!isset($_SESSION["logged_in"])) {
                                 <!-- Card Header - Dropdown -->
                                 <div
                                     class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                                    <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
+                                    <h6 class="m-0 font-weight-bold text-primary">Statistics for Today</h6>
                                     <div class="dropdown no-arrow">
                                         <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -206,20 +247,7 @@ if(!isset($_SESSION["logged_in"])) {
                                 </div>
                                 <!-- Card Body -->
                                 <div class="card-body">
-                                    <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="myPieChart"></canvas>
-                                    </div>
-                                    <div class="mt-4 text-center small">
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-primary"></i> Direct
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-success"></i> Social
-                                        </span>
-                                        <span class="mr-2">
-                                            <i class="fas fa-circle text-info"></i> Referral
-                                        </span>
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -435,11 +463,62 @@ if(!isset($_SESSION["logged_in"])) {
     <!-- Custom scripts for all pages-->
     <script src="js/sb-admin-2.min.js"></script>
 
-    <!-- Page level plugins -->
-    <script src="../assets/vendor/chart.js/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
+    <script>
+    let originalData = <?php echo json_encode($dashboardData) ?>;
+    let humidityData = []
+    let temperatureData = []
 
-    <!-- Page level custom scripts -->
-    <script src="../assets/js/demo/chart-area-demo.js"></script>
+    for (let data of originalData) {
+        humidityData.push({x: data["datetime"], y: data["humidity"]})
+    }
+
+    for (let data of originalData) {
+        temperatureData.push({x: data["datetime"], y: data["temperature"]})
+    }
+
+    const data = {
+        datasets: [{
+            label: 'Humidity',
+            borderColor: 'rgb(51, 153, 255)',
+
+            data: humidityData,
+            },
+            {
+            label: 'Temperature',
+            borderColor: 'rgb(255, 153, 0)',
+
+            data: temperatureData,
+            },
+        ]
+    };
+
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    type: 'time',
+                }
+            },
+            layout: {
+                padding: {
+                    bottom: 30
+                }
+            }
+        }
+    }
+
+    const myChart = new Chart(
+    document.getElementById('myAreaChart'),
+    config
+    );
+
+    </script>
     <script src="../assets/js/demo/chart-pie-demo.js"></script>
 
 </body>
