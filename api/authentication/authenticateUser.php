@@ -23,7 +23,7 @@ if (isset($_GET['username']) && $_GET['username']!="" && isset($_GET["token"]) &
         $result = $read->get_result();
 
         if ($result->num_rows == 1) {
-            createResponse(true, "Successfully authenticated. You may now login.");
+            createResponse(true, "Successfully authenticated. Beginning data read..");
         } else {
             createResponse(false, "Invalid authentication token.");
         }
