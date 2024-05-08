@@ -22,7 +22,7 @@
     <br>
     <br>
 
-    <button><a href="Register.html"><big>Register</big></a></button>
+    <button><a href="/register/"><big>Register</big></a></button>
     <br>
     
     

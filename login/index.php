@@ -38,6 +38,7 @@ if(isset($_POST['username']) && isset($_POST["password"])) {
 		if (password_verify($password, $userData["password"])) {
 			$_SESSION["logged_in"] = true;
 			$_SESSION["id"] = $userData["id"];
+			$_SESSION["username"] = $userData["username"];
 			$token = base64_encode(random_bytes(6));
 			$updateToken = $conn->prepare("UPDATE users SET token=? WHERE username=?");
 			$updateToken->bind_param("ss", $token, $username);
