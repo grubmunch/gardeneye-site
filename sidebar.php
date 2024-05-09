@@ -54,8 +54,10 @@ if(isset($_SESSION["id"])) {
         <div class="bg-white py-2 collapse-inner rounded">
             <h6 class="collapse-header">Active Environments:</h6>
             <?php 
-                foreach ($userEnvironments as $env) {
-                    echo '<a class="collapse-item" href="../dashboard/?environment='.$env["environ_id"].'">'.$env["environ_name"].'</a>';
+                if(!is_null($userEnvironments)) {
+                    foreach ($userEnvironments as $env) {
+                        echo '<a class="collapse-item" href="../dashboard/?environment='.$env["environ_id"].'">'.$env["environ_name"].'</a>';
+                    }
                 }
             ?>
         </div>

@@ -25,18 +25,21 @@ if(isset($_SESSION["id"])) {
     }
 }
 
-if(sizeof($userEnv) > 1) {
-    $environmentId = $userEnv[0]["environ_id"];
-    $currentEnv = $userEnv[0];
-}
-
-if(isset($_GET['environment'])) {
-    foreach($userEnv as $env) {
-        if ($env["environ_id"] == $_GET["environment"]) {
-            $environmentId = $env["environ_id"];
-            $currentEnv = $env;
+if(!is_null($userEnv)) {
+    if(sizeof($userEnv) > 1) {
+        $environmentId = $userEnv[0]["environ_id"];
+        $currentEnv = $userEnv[0];
+    }
+    if(isset($_GET['environment'])) {
+        foreach($userEnv as $env) {
+            if ($env["environ_id"] == $_GET["environment"]) {
+                $environmentId = $env["environ_id"];
+                $currentEnv = $env;
+            }
         }
     }
+} else {
+    header("Location: ../create/?warning=true");
 }
 
 $dashboardData = null;
@@ -93,7 +96,6 @@ if ($result->num_rows != 0) {
 
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
-
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         <h1 class="h3 mb-0 text-gray-800">Dashboard: <?php echo $currentEnv["environ_name"]; ?></h1>

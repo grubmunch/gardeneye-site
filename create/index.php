@@ -10,6 +10,12 @@ if(!isset($_SESSION["logged_in"])) {
 }
 $message = "";
 
+if(isset($_GET["warning"])) {
+    $message = "<div class='alert alert-warning' role='alert'>
+                You must create an environment before you enter the dashboard!
+            </div>";
+}
+
 if(isset($_POST["environName"])) {
     if(!empty($_POST["environName"])) {
         $desc = "";
@@ -43,6 +49,7 @@ if(isset($_POST["environName"])) {
                     </div>";
     }
 }
+
 
 ?>
 
