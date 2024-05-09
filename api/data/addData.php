@@ -10,28 +10,36 @@ ini_set('display_startup_errors', 1);
 
 $DATA_INTERVAL_MINS = "10"; // How many minutes since the last data reading is allowed
 
-if (isset($_GET["environ_id"]) && !empty($_GET["environ_id"]) && isset($_GET["temperature"]) && !empty($_GET["temperature"]) && isset($_GET["humidity"]) && !empty($_GET["humidity"]) && isset($_GET['username']) && $_GET['username']!="" && isset($_GET["token"]) && $_GET["token"] != "") {
+if (isset($_GET["temperature"]) && !empty($_GET["temperature"]) && isset($_GET["humidity"]) && !empty($_GET["humidity"]) && isset($_GET['username']) && $_GET['username']!="" && isset($_GET["token"]) && $_GET["token"] != "") {
     $username = $conn->real_escape_string($_GET["username"]);
     $token = $conn->real_escape_string($_GET["token"]);
 
-    $user = $conn->prepare('SELECT username FROM users WHERE username=?');
+    $user = $conn->prepare('SELECT id, username FROM users WHERE username=?');
     $user->bind_param('s', $username);
     $user->execute();
     $result = $user->get_result();
 
     if ($result->num_rows == 1) {
+        $userData = $result->fetch_assoc();
+
         $read = $conn->prepare('SELECT token FROM users WHERE username=? AND token=?');
         $read->bind_param('ss', $username, $token);
         $read->execute();
         $result = $read->get_result();
 
         if ($result->num_rows == 1) {
-            $environ_id = $conn->real_escape_string($_GET["environ_id"]);
+            
+            $read = $conn->prepare('SELECT environ_id FROM environments WHERE user_id=?');
+            $read->bind_param('i', $userData["id"]);
+            $read->execute();
+            $result = $read->get_result();
+            $environmentId = $result->fetch_assoc()["environ_id"];
+
             $humidity = $conn->real_escape_string($_GET["humidity"]); // todo: validate
             $temperature = $conn->real_escape_string($_GET["temperature"]); // todo: validate
 
             $getLastTime = $conn->prepare("SELECT datetime FROM gardeneye_data WHERE environ_id=? ORDER BY id DESC LIMIT 1");
-            $getLastTime->bind_param("i", $environ_id);
+            $getLastTime->bind_param("i", $environmentId);
             $getLastTime->execute();
             $timeRes = $getLastTime->get_result();
             
@@ -45,7 +53,7 @@ if (isset($_GET["environ_id"]) && !empty($_GET["environ_id"]) && isset($_GET["te
             $minutes = abs($dateTime->getTimestamp() - $currentDate->getTimestamp()) / 60;
                 if($minutes >= $DATA_INTERVAL_MINS) {
                 $insertData = $conn->prepare("INSERT INTO gardeneye_data (environ_id, humidity, temperature) VALUES (?, ?, ?)");
-                $insertData->bind_param("iss", $environ_id, $humidity, $temperature);
+                $insertData->bind_param("iss", $environmentId, $humidity, $temperature);
                 if($insertData->execute()) {
                     createResponse(true, "Successfully added data reading to environment.");
                 }

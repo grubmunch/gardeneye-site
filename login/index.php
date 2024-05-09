@@ -39,17 +39,8 @@ if(isset($_POST['username']) && isset($_POST["password"])) {
 			$_SESSION["logged_in"] = true;
 			$_SESSION["id"] = $userData["id"];
 			$_SESSION["username"] = $userData["username"];
-			$token = base64_encode(random_bytes(6));
-			$updateToken = $conn->prepare("UPDATE users SET token=? WHERE username=?");
-			$updateToken->bind_param("ss", $token, $username);
-			$updateToken->execute();
-			$result = $updateToken->get_result();
 
-			if (mysqli_affected_rows($conn) > 0) {
-				header("Location: ../dashboard/");
-			} else {
-				die("ERROR: Could not update token.");
-			}
+			header("Location: ../setup/");
 		} else {
 			$validPassword = false;
 			$passwordError = "This password is incorrect.";
