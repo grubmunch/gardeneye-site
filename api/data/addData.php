@@ -8,7 +8,20 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 
 
-$DATA_INTERVAL_MINS = "10"; // How many minutes since the last data reading is allowed
+$DATA_INTERVAL_MINS = "1"; // How many minutes since the last data reading is allowed
+
+// Ranges for notifications
+$perfectRanges = array(
+    "temperature" => [17, 25],
+    "humidity" => [40, 50]
+);
+
+$warningRanges = array(
+    "temperature" => [5, 38],
+    "humidity" => [20, 75]
+);
+
+
 
 if (isset($_GET["temperature"]) && !empty($_GET["temperature"]) && isset($_GET["humidity"]) && !empty($_GET["humidity"]) && isset($_GET['username']) && $_GET['username']!="" && isset($_GET["token"]) && $_GET["token"] != "") {
     $username = $conn->real_escape_string($_GET["username"]);
@@ -43,19 +56,53 @@ if (isset($_GET["temperature"]) && !empty($_GET["temperature"]) && isset($_GET["
             $getLastTime->execute();
             $timeRes = $getLastTime->get_result();
             
-            $timezone = new DateTimeZone('Europe/London');
-            
-            $currentDate = new DateTime("now", $timezone);
-            $dateTime = new DateTime("1970-01-01 01:00:00", $timezone);
+            $currentDate = new DateTime("now");
+            $dateTime = new DateTime("1970-01-01 01:00:00");
             if ($timeRes->num_rows != 0) {
-                $dateTime = new DateTime($timeRes->fetch_assoc()["datetime"], $timezone);
+                $dateTime = new DateTime($timeRes->fetch_assoc()["datetime"]);
             }
             $minutes = abs($dateTime->getTimestamp() - $currentDate->getTimestamp()) / 60;
-                if($minutes >= $DATA_INTERVAL_MINS) {
+            if($minutes >= $DATA_INTERVAL_MINS) {
                 $insertData = $conn->prepare("INSERT INTO gardeneye_data (environ_id, humidity, temperature) VALUES (?, ?, ?)");
                 $insertData->bind_param("iss", $environmentId, $humidity, $temperature);
                 if($insertData->execute()) {
                     createResponse(true, "Successfully added data reading to environment.");
+
+                    if($temperature >= $perfectRanges["temperature"][0] && $temperature <= $perfectRanges["temperature"][1]) {
+
+                    } elseif($temperature >= $warningRanges["temperature"][0] && $temperature <= $warningRanges["temperature"][1]) {
+                        $notificationType = 1; // warning
+                        $notificationText = "Warning: The temperature for one of your environments isn't optimal.";
+                        
+                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text) VALUES (?, ?, ?, ?)");
+                        $insertNotificationData->bind_param("iiss", $userData["id"], $environmentId, $notificationType, $notificationText);
+                        $insertNotificationData->execute();
+                    } else {
+                        $notificationType = 2; // critical
+                        $notificationText = "Critical: The temperature for one of your environments entered a dangerous range.";
+                        
+                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text) VALUES (?, ?, ?, ?)");
+                        $insertNotificationData->bind_param("iiss", $userData["id"], $environmentId, $notificationType, $notificationText);
+                        $insertNotificationData->execute();
+                    }
+        
+                    if($humidity >= $perfectRanges["humidity"][0] && $humidity <= $perfectRanges["humidity"][1]) {
+        
+                    } elseif($humidity >= $warningRanges["humidity"][0] && $humidity <= $warningRanges["humidity"][1]) {
+                        $notificationType = 1; // warning
+                        $notificationText = "Warning: The humidity for one of your environments isn't optimal.";
+                        
+                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text) VALUES (?, ?, ?, ?)");
+                        $insertNotificationData->bind_param("iiss", $userData["id"], $environmentId, $notificationType, $notificationText);
+                        $insertNotificationData->execute();
+                    } else {
+                        $notificationType = 2; // critical
+                        $notificationText = "Critical: The humidity for one of your environments entered a dangerous range.";
+                        
+                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text) VALUES (?, ?, ?, ?)");
+                        $insertNotificationData->bind_param("iiss", $userData["id"], $environmentId, $notificationType, $notificationText);
+                        $insertNotificationData->execute();
+                    }
                 }
             } else {
                 createResponse(false, "Invalid interval since last data reading. Please wait a while longer.");

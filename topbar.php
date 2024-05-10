@@ -1,3 +1,42 @@
+<script>
+    let notificationData
+    $.getJSON( `../api/notification/getNotifications.php`, function( data ) {
+        notificationData = data.message
+        if(data.success && notificationData.length > 0) {
+            document.getElementById("notifCount").innerHTML = notificationData.length
+            for(let data of notificationData) {
+                let notification = ""
+                if (data.notification_type == 1) {
+                    notification = `<a class="dropdown-item d-flex align-items-center" href="../dashboard/?environment=${data.environ_id}&read_notification=${data.id}">
+                                            <div class="mr-3">
+                                                <div class="icon-circle bg-warning">
+                                                    <i class="fas fa-exclamation-triangle text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="font-weight-bold">${data.notification_text}</span>
+                                            </div>
+                                        </a>`
+                } else if (data.notification_type == 2) {
+                    notification = `<a class="dropdown-item d-flex align-items-center" href="../dashboard/?environment=${data.environ_id}&read_notification=${data.id}">
+                                            <div class="mr-3">
+                                                <div class="icon-circle bg-danger">
+                                                    <i class="fas fa-exclamation-triangle text-white"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <span class="font-weight-bold">${data.notification_text}</span>
+                                            </div>
+                                        </a>`
+                }
+                $('#alertCenter').append(notification);
+            }
+        } else {
+            $('#alertCenter').append('<div class="dropdown-item">No notifications!</div>')
+        }
+    });
+</script>
+
 <!-- Topbar -->
 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
@@ -14,48 +53,14 @@
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-bell fa-fw"></i>
             <!-- Counter - Alerts -->
-            <span class="badge badge-danger badge-counter">3+</span>
+            <span class="badge badge-danger badge-counter" id="notifCount">0</span>
         </a>
         <!-- Dropdown - Alerts -->
-        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+        <div id="alertCenter" class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
             aria-labelledby="alertsDropdown">
             <h6 class="dropdown-header">
                 Alerts Center
             </h6>
-            <a class="dropdown-item d-flex align-items-center" href="#">
-                <div class="mr-3">
-                    <div class="icon-circle bg-primary">
-                        <i class="fas fa-file-alt text-white"></i>
-                    </div>
-                </div>
-                <div>
-                    <div class="small text-gray-500">December 12, 2019</div>
-                    <span class="font-weight-bold">A new monthly report is ready to download!</span>
-                </div>
-            </a>
-            <a class="dropdown-item d-flex align-items-center" href="#">
-                <div class="mr-3">
-                    <div class="icon-circle bg-success">
-                        <i class="fas fa-donate text-white"></i>
-                    </div>
-                </div>
-                <div>
-                    <div class="small text-gray-500">December 7, 2019</div>
-                    $290.29 has been deposited into your account!
-                </div>
-            </a>
-            <a class="dropdown-item d-flex align-items-center" href="#">
-                <div class="mr-3">
-                    <div class="icon-circle bg-warning">
-                        <i class="fas fa-exclamation-triangle text-white"></i>
-                    </div>
-                </div>
-                <div>
-                    <div class="small text-gray-500">December 2, 2019</div>
-                    Spending Alert: We've noticed unusually high spending for your account.
-                </div>
-            </a>
-            <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
         </div>
     </li>
     <div class="topbar-divider d-none d-sm-block"></div>

@@ -98,12 +98,6 @@ ini_set('display_startup_errors', 1);
     <script src="../assets/js/demo/chart-area-demo.js"></script>
     <script src="../assets/js/demo/chart-pie-demo.js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js" 
-        integrity= 
-    "sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" 
-        crossorigin="anonymous"> 
-    </script>
-
     <script>
         $(".generateToken").on("click", function(){
             $.getJSON( `../api/authentication/generateToken.php`, function( data ) {

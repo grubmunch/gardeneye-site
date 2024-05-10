@@ -26,7 +26,7 @@ if(isset($_SESSION["id"])) {
 }
 
 if(!is_null($userEnv)) {
-    if(sizeof($userEnv) > 1) {
+    if(sizeof($userEnv) > 0) {
         $environmentId = $userEnv[0]["environ_id"];
         $currentEnv = $userEnv[0];
     }
@@ -40,6 +40,17 @@ if(!is_null($userEnv)) {
     }
 } else {
     header("Location: ../create/?warning=true");
+}
+
+if(isset($_GET["read_notification"])) {
+    $notificationId = $conn->real_escape_string($_GET["read_notification"]);
+    $update = $conn->prepare('UPDATE notifications SET unread=0 WHERE id=? AND environ_id=? AND user_id=?');
+    $update->bind_param('iii', $notificationId, $environmentId, $_SESSION['id']);
+    if($update->execute()) {
+
+    } else {
+        die("could not update notification refresh");
+    }
 }
 ?>
         <?php include("../sidebar.php"); ?>
@@ -159,11 +170,6 @@ if(!is_null($userEnv)) {
     <script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
 
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js" 
-        integrity= 
-    "sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" 
-        crossorigin="anonymous"> 
-    </script> 
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" 
         integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" 
         crossorigin="anonymous"> 
