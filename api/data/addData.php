@@ -82,7 +82,7 @@ if (isset($_GET["temperature"]) && !empty($_GET["temperature"]) && isset($_GET["
                         $notificationType = 2; // critical
                         $notificationText = "Critical: The temperature for one of your environments entered a dangerous range.";
                         
-                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text, unread) VALUES (?, ?, ?, ?)");
+                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text, unread) VALUES (?, ?, ?, ?, ?)");
                         $insertNotificationData->bind_param("iissi", $userData["id"], $environmentId, $notificationType, $notificationText, $unread);
                         $insertNotificationData->execute();
                     }
@@ -93,14 +93,14 @@ if (isset($_GET["temperature"]) && !empty($_GET["temperature"]) && isset($_GET["
                         $notificationType = 1; // warning
                         $notificationText = "Warning: The humidity for one of your environments isn't optimal.";
                         
-                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text, unread) VALUES (?, ?, ?, ?)");
+                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text, unread) VALUES (?, ?, ?, ?, ?)");
                         $insertNotificationData->bind_param("iissi", $userData["id"], $environmentId, $notificationType, $notificationText, $unread);
                         $insertNotificationData->execute();
                     } else {
                         $notificationType = 2; // critical
                         $notificationText = "Critical: The humidity for one of your environments entered a dangerous range.";
                         
-                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text, unread) VALUES (?, ?, ?, ?)");
+                        $insertNotificationData = $conn->prepare("INSERT INTO notifications (user_id, environ_id, notification_type, notification_text, unread) VALUES (?, ?, ?, ?, ?)");
                         $insertNotificationData->bind_param("iissi", $userData["id"], $environmentId, $notificationType, $notificationText, $unread);
                         $insertNotificationData->execute();
                     }
